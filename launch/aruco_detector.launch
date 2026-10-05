@@ -1,0 +1,28 @@
+<launch>
+
+  <!-- Lanzar la cámara RealSense -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="enable_pointcloud" value="true"/>
+    <arg name="align_depth" value="true"/>
+    <arg name="ordered_pc" value="true"/>
+  </include>
+
+  <!-- Esperar un poco antes de lanzar el detector (opcional) -->
+  <group ns="aruco">
+    <node pkg="aruco_detector" type="aruco_detector" name="aruco_detector" output="screen"/>
+  </group>
+
+  <!-- Lanzar nodo de localización -->
+  <node pkg="localization" type="localization_node" name="localization_node" output="screen">
+  <rosparam param="initial_pose">
+  - 0.0
+  - 0.0
+  - 0.0
+  </rosparam>
+  <param name="landmarks_file" value="/home/sara/catkin_ws/config/landmarks_file.yaml"/>
+   <param name="camera_height" value="1.05"/>
+  </node> 
+ 
+
+
+</launch>
