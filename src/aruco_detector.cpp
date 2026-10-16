@@ -34,8 +34,6 @@ public:
 
     dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
     markerLength = 0.059; // metros
-
-    ROS_INFO("ArUcoDetector: theta_offset_ (pitch) = %.3f rad", theta_offset_);
   }
 
 private:
