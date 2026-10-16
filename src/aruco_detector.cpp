@@ -101,7 +101,7 @@ private:
     cv::aruco::detectMarkers(gray, dictionary, corners, ids);
 
     if (ids.empty()) {
-      cv::imshow("ArUco Detection", cv_ptr->image);
+      //cv::imshow("ArUco Detection", cv_ptr->image);
       cv::waitKey(1);
       return;
     }
@@ -174,7 +174,7 @@ private:
     }
     aruco_markers.publish(markers);
 
-    cv::imshow("ArUco Detection", cv_ptr->image);
+    //cv::imshow("ArUco Detection", cv_ptr->image);
     cv::waitKey(1);
   }
 };
