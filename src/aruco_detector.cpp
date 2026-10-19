@@ -15,10 +15,11 @@ class ArUcoDetector {
 public:
   ArUcoDetector() : it(nh), have_cam_info(false) {
     ros::NodeHandle pnh("~");
-    pnh.param("camera_offset_x", camera_offset_x_, 0.758);  // en m
-    pnh.param("camera_offset_y", camera_offset_y_, -0.303); // en m
-    pnh.param("camera_pitch", camera_pitch_, 0.0);          // en radianes
-    pnh.param("camera_height", camera_height_, 0.89);       // en radianes
+    pnh.param("camera_offset_x", camera_offset_x_, 0.884938213);  // en m
+    pnh.param("camera_offset_y", camera_offset_y_, -0.184078095); // en m
+    pnh.param("camera_pitch", camera_pitch_, 0.741557322);          // en radianes
+    pnh.param("image_show", image_show_, false);       
+    pnh.param("marker_length", marker_length_, 0.050f);  
 
     // Suscripciones
     image_sub = it.subscribe("/camera/color/image_raw", 1,
@@ -33,7 +34,8 @@ public:
         nh.advertise<aruco_detector::ArucoMarkers>("/aruco_markers", 10);
 
     dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-    markerLength = 0.059; // metros
+
+    
   }
 
 private:
@@ -50,12 +52,12 @@ private:
   bool have_cam_info;
 
   cv::Ptr<cv::aruco::Dictionary> dictionary;
-  double markerLength;
+  float marker_length_;
 
   double camera_offset_x_;
   double camera_offset_y_;
   double camera_pitch_;
-  double camera_height_;
+  bool image_show_;
 
   cv::Mat latest_depth;
   ros::Time latest_depth_stamp;
@@ -101,7 +103,10 @@ private:
     cv::aruco::detectMarkers(gray, dictionary, corners, ids);
 
     if (ids.empty()) {
-      //cv::imshow("ArUco Detection", cv_ptr->image);
+      if (image_show_){
+        cv::imshow("ArUco Detection", cv_ptr->image);
+      }
+      
       cv::waitKey(1);
       return;
     }
@@ -109,10 +114,10 @@ private:
     cv::aruco::drawDetectedMarkers(cv_ptr->image, corners, ids);
 
     std::vector<cv::Point3f> objectPoints = {
-        {-markerLength / 2.f, markerLength / 2.f, 0},
-        {markerLength / 2.f, markerLength / 2.f, 0},
-        {markerLength / 2.f, -markerLength / 2.f, 0},
-        {-markerLength / 2.f, -markerLength / 2.f, 0}};
+        {-marker_length_ / 2.f, marker_length_ / 2.f, 0},
+        {marker_length_ / 2.f, marker_length_ / 2.f, 0},
+        {marker_length_ / 2.f, -marker_length_ / 2.f, 0},
+        {-marker_length_ / 2.f, -marker_length_ / 2.f, 0}};
 
     aruco_detector::ArucoMarkers markers;
     // markers.header.stamp = msg->header.stamp;
@@ -174,7 +179,9 @@ private:
     }
     aruco_markers.publish(markers);
 
-    //cv::imshow("ArUco Detection", cv_ptr->image);
+    if (image_show_){
+        cv::imshow("ArUco Detection", cv_ptr->image);
+      }
     cv::waitKey(1);
   }
 };
