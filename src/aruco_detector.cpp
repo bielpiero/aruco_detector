@@ -9,6 +9,7 @@
 #include <tf/transform_broadcaster.h>
 
 // Mensaje custom con ID
+#include "aruco_detector/TimingLogger.hpp"
 #include <aruco_detector/ArucoMarkers.h>
 
 class ArUcoDetector {
@@ -17,9 +18,9 @@ public:
     ros::NodeHandle pnh("~");
     pnh.param("camera_offset_x", camera_offset_x_, 0.884938213);  // en m
     pnh.param("camera_offset_y", camera_offset_y_, -0.184078095); // en m
-    pnh.param("camera_pitch", camera_pitch_, 0.741557322);          // en radianes
-    pnh.param("image_show", image_show_, false);       
-    pnh.param("marker_length", marker_length_, 0.050f);  
+    pnh.param("camera_pitch", camera_pitch_, 0.741557322);        // en radianes
+    pnh.param("image_show", image_show_, false);
+    pnh.param("marker_length", marker_length_, 0.050f);
 
     // Suscripciones
     image_sub = it.subscribe("/camera/color/image_raw", 1,
@@ -34,8 +35,6 @@ public:
         nh.advertise<aruco_detector::ArucoMarkers>("/aruco_markers", 10);
 
     dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-
-    
   }
 
 private:
@@ -100,13 +99,19 @@ private:
 
     std::vector<int> ids;
     std::vector<std::vector<cv::Point2f>> corners;
+
+    const double start_ms = TimingLogger::nowMs();
     cv::aruco::detectMarkers(gray, dictionary, corners, ids);
+    const double elapsed_ms = TimingLogger::nowMs() - start_ms;
+
+    TimingLogger::log("/home/sara/aruco_timing.csv", "aruco_detection",
+                      elapsed_ms);
 
     if (ids.empty()) {
-      if (image_show_){
+      if (image_show_) {
         cv::imshow("ArUco Detection", cv_ptr->image);
       }
-      
+
       cv::waitKey(1);
       return;
     }
@@ -120,8 +125,8 @@ private:
         {-marker_length_ / 2.f, -marker_length_ / 2.f, 0}};
 
     aruco_detector::ArucoMarkers markers;
-    // markers.header.stamp = msg->header.stamp;
-    // markers.header.frame_id = "camera_color_optical_frame";
+    markers.header = msg->header;
+
     for (size_t i = 0; i < ids.size(); i++) {
       cv::Vec3d rvec, tvec;
       cv::solvePnP(objectPoints, corners[i], cameraMatrix, distCoeffs, rvec,
@@ -179,9 +184,9 @@ private:
     }
     aruco_markers.publish(markers);
 
-    if (image_show_){
-        cv::imshow("ArUco Detection", cv_ptr->image);
-      }
+    if (image_show_) {
+      cv::imshow("ArUco Detection", cv_ptr->image);
+    }
     cv::waitKey(1);
   }
 };
