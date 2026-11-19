@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(aruco_detector)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -146,7 +146,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/aruco_detector_node.cpp)
 add_executable(aruco_detector src/aruco_detector.cpp)
-add_executable(camera_node src/camera_node.cpp)
+#add_executable(camera_node src/camera_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -163,7 +163,7 @@ add_executable(camera_node src/camera_node.cpp)
 #   ${catkin_LIBRARIES}
 # )
   target_link_libraries(aruco_detector ${catkin_LIBRARIES} ${OpenCV_LIBS})
-  target_link_libraries(camera_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
+  #target_link_libraries(camera_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
 #############
 ## Install ##
 #############
