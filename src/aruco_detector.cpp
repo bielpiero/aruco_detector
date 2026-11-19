@@ -16,9 +16,10 @@ class ArUcoDetector {
 public:
   ArUcoDetector() : it(nh), have_cam_info(false) {
     ros::NodeHandle pnh("~");
-    pnh.param("camera_offset_x", camera_offset_x_, 0.884938213);  // en m
-    pnh.param("camera_offset_y", camera_offset_y_, -0.184078095); // en m
-    pnh.param("camera_pitch", camera_pitch_, 0.741557322);        // en radianes
+    pnh.param("camera_offset_x", camera_offset_x_, 0.884938213);  // m
+    pnh.param("camera_offset_y", camera_offset_y_, -0.184078095); // m
+    pnh.param("camera_pitch", camera_pitch_, 0.741557322);        // rad
+    pnh.param("camera_yaw", camera_yaw_, 0.0);                    // rad
     pnh.param("image_show", image_show_, false);
     pnh.param("marker_length", marker_length_, 0.050f);
 
@@ -56,6 +57,7 @@ private:
   double camera_offset_x_;
   double camera_offset_y_;
   double camera_pitch_;
+  double camera_yaw_;
   bool image_show_;
 
   cv::Mat latest_depth;
@@ -164,8 +166,14 @@ private:
       double x_forward =
           z_cam * std::cos(camera_pitch_) - y_cam * std::sin(camera_pitch_);
 
-      double x_from_camera = x_forward;
-      double y_from_camera = -x_cam;
+      const double y_left = -x_cam;
+
+      // Rotate about base Z, then translate by the camera centre in base XY.
+      // Same convention as camera_calibration_extrinsics.py.
+      const double c_yaw = std::cos(camera_yaw_);
+      const double s_yaw = std::sin(camera_yaw_);
+      const double x_from_camera = c_yaw * x_forward - s_yaw * y_left;
+      const double y_from_camera = s_yaw * x_forward + c_yaw * y_left;
 
       double x_base = camera_offset_x_ + x_from_camera;
       double y_base = camera_offset_y_ + y_from_camera;
